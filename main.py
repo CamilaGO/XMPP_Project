@@ -1,5 +1,6 @@
 import functions
 import sys
+import logging
 
 user_xmpp = None
 
@@ -11,6 +12,8 @@ def print_menu():
 
 
 #empieza el main 
+
+
 print("******************** CHAT XMPP ********************")
 option = print_menu()   
 
@@ -32,11 +35,23 @@ while(option >= 1 or option <= 1 ):
 
     elif (option == 2):
         print("\n========= Sign In =========\n")
-        user = input("Username: ") #gon18398@alumchat.xyz / camila@alumchat.xyz
+        logging.basicConfig()
+
+        user = input("Username: ") #gon18398@alumchat.xyz / camila@alumchat.xyz 
         passw = input("Password: ") #123
         print("Loading ......")
+        #my_xmpp = functions.XMPP_CHAT(user, passw)
         my_xmpp = functions.XMPP_CHAT(user, passw)
+        my_xmpp.connect()
+        print("You have successfully logged in")
+        #my_xmpp.process(block=True)
 
+        option = print_menu()  
+    
+    elif (option == 3):
+        print("\n========= Sign Out =========\n")
+        print("Disconnecting... ")
+        my_xmpp.sign_out()
         option = print_menu()  
 
     elif (option == 13):

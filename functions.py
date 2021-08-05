@@ -1,22 +1,13 @@
 import sys
+import aiodns
+import asyncio
 import logging
-import getpass
 import xmpp
-import time
-import threading
-import binascii
-import sleekxmpp
-from optparse import OptionParser
-from sleekxmpp.util.misc_ops import setdefaultencoding
-from sleekxmpp.exceptions import IqError, IqTimeout
-from sleekxmpp.xmlstream.stanzabase import ET, ElementBase
-from xml.etree.ElementTree import fromstring, ElementTree
 
-if sys.version_info < (3, 0):
-    from sleekxmpp.util.misc_ops import setdefaultencoding
-    setdefaultencoding('utf8')
-else:
-    raw_input = input
+from slixmpp import ClientXMPP
+
+if sys.platform == 'win32' and sys.version_info >= (3, 8):
+     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Register a new user
 def sign_up(user, passw):
@@ -30,19 +21,51 @@ def sign_up(user, passw):
         return True
     else:
         return False
+
         
-class XMPP_CHAT(sleekxmpp.ClientXMPP):
+class XMPP_CHAT(ClientXMPP):
     def __init__(self, jid, password):
-        super(XMPP_CHAT, self).__init__(jid, password)
-        self.auto_authorize = True
+        #super(XMPP_CHAT, self).__init__(jid, password)
+        ClientXMPP.__init__(self, jid, password)
+
+        # Setup the command line arguments.
+        """parser = ArgumentParser(description=XMPP_CHAT.__doc__)
+
+        # Output verbosity options.
+        parser.add_argument("-q", "--quiet", help="set logging to ERROR",
+                            action="store_const", dest="loglevel",
+                            const=logging.ERROR, default=logging.INFO)
+        parser.add_argument("-d", "--debug", help="set logging to DEBUG",
+                            action="store_const", dest="loglevel",
+                            const=logging.DEBUG, default=logging.INFO)
+
+        # JID and password options.
+        parser.add_argument("-j", "--jid", dest="jid",
+                            help="JID to use")
+        parser.add_argument("-p", "--password", dest="password",
+                            help="password to use")
+
+        args = parser.parse_args()
+
+        if args.jid is None:
+            args.jid = input("Component JID: ")
+        if args.password is None:
+            args.password = getpass("Password: ")
+
+        # Setup logging.
+        logging.basicConfig(level=args.loglevel,
+                            format='%(levelname)-8s %(message)s')"""
+
+        """self.auto_authorize = True
         self.auto_subscribe = True
         self.contact_dict = {}
         self.user_dict = {}
-        self.username = jid
+        self.username = jid"""
 
-        self.add_event_handler("session_start", self.sign_in)
+        self.add_event_handler("start_connection", self.start_connection)
+        self.add_event_handler("message", self.message)
 
-        self.received = set()
+        """self.received = set()
         self.contacts = []
         self.presences_received = threading.Event()
 
@@ -64,11 +87,27 @@ class XMPP_CHAT(sleekxmpp.ClientXMPP):
             self.process(block=False)
         else:
             print("We could not connect to @alumchat.xyz")
+        self.register_plugin('xep_0030') # Service Discovery
+        self.register_plugin('xep_0199') # XMPP Ping
+
+        # Connect to the XMPP server and start processing XMPP stanzas.
+        self.connect()
+        self.process(forever=False)"""
 
     #Log in with a previous created user
-    def sign_in(self, event):
-        self.send_presence()
-        roster = self.get_roster()
+    def start_connection(self, event):
+        self.send_presence('chat', 'hello world!')
+        self.get_roster()
+        
+
+    def message(self, msg):
+        print(msg)
+        if msg['type'] in ('chat', 'normal'):
+            msg.reply("Thanks for sending\n%(body)s" % msg).send()
+
+    def sign_out(self):
+        self.disconnect(wait=True)
+        print("Disconnected")
 
 
 
