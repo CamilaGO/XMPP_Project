@@ -1,4 +1,5 @@
 import functions
+import fun2
 import sys
 import logging
 
@@ -25,7 +26,7 @@ while(option >= 1 or option <= 1 ):
         code = input("Type your password:    ")
         print("Loading ......")
 
-        signup = functions.sign_up(nickname, code)
+        signup = fun2.sign_up(nickname, code)
         if (signup):
             print("User succesfully created!")
         else:
@@ -40,8 +41,8 @@ while(option >= 1 or option <= 1 ):
         user = input("Username: ") #gon18398@alumchat.xyz / camila@alumchat.xyz 
         passw = input("Password: ") #123
         print("Loading ......")
-        #my_xmpp = functions.XMPP_CHAT(user, passw)
-        my_xmpp = functions.XMPP_CHAT(user, passw)
+        #my_xmpp = fun2.XMPP_CHAT(user, passw)
+        my_xmpp = fun2.XMPP_CHAT(user, passw, 1)
         my_xmpp.connect()
         print("You have successfully logged in")
         #my_xmpp.process(block=True)
@@ -52,7 +53,38 @@ while(option >= 1 or option <= 1 ):
         print("\n========= Sign Out =========\n")
         print("Disconnecting... ")
         my_xmpp.sign_out()
-        option = print_menu()  
+        option = print_menu() 
+
+    elif (option == 8):
+        print("\n========= Send Message =========\n")
+        logging.basicConfig()
+        recipient = input("Recipient username: ") #ddeleon2
+
+        msg = input("Message: ") #123
+        print("Sending ......")
+        
+        my_xmpp = fun2.XMPP_CHAT(user, passw, 2, recipient, msg)
+        #print("You have successfully logged in")
+        my_xmpp.connect()
+        print("se conecto")
+        #my_xmpp.send_message(recipient, msg)
+        
+        
+
+        option = print_menu()
+
+    elif (option == 5):
+        print("\n========= Show All Contacts =========\n")
+        my_xmpp = fun2.XMPP_CHAT(user, passw, 4)
+        my_xmpp.connect()
+        my_xmpp.process(forever=False)  
+
+    elif (option == 6):
+        print("\n========= Show All Contacts =========\n")
+        new_contact = input("Contact user: ")
+        my_xmpp = fun2.XMPP_CHAT(user, passw, 5, new_contact)
+        my_xmpp.connect()
+        my_xmpp.process(forever=False)   
 
     elif (option == 13):
         print("\nC U Later - _ -")
