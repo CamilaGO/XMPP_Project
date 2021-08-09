@@ -35,75 +35,30 @@ def sign_up(user, passw):
         
 class XMPP_CHAT(ClientXMPP):
     def __init__(self, jid, password, *more_arguments):
-        #super(XMPP_CHAT, self).__init__(jid, password)
         ClientXMPP.__init__(self, jid, password)
         self.action_info = more_arguments
-        # Setup the command line arguments.
-        """parser = ArgumentParser(description=XMPP_CHAT.__doc__)
-
-        # Output verbosity options.
-        parser.add_argument("-q", "--quiet", help="set logging to ERROR",
-                            action="store_const", dest="loglevel",
-                            const=logging.ERROR, default=logging.INFO)
-        parser.add_argument("-d", "--debug", help="set logging to DEBUG",
-                            action="store_const", dest="loglevel",
-                            const=logging.DEBUG, default=logging.INFO)
-
-        # JID and password options.
-        parser.add_argument("-j", "--jid", dest="jid",
-                            help="JID to use")
-        parser.add_argument("-p", "--password", dest="password",
-                            help="password to use")
-
-        args = parser.parse_args()
-
-        if args.jid is None:
-            args.jid = input("Component JID: ")
-        if args.password is None:
-            args.password = getpass("Password: ")
-
-        # Setup logging.
-        logging.basicConfig(level=args.loglevel,
-                            format='%(levelname)-8s %(message_start)s')"""
-
-        """self.auto_authorize = True
-        self.auto_subscribe = True
-        self.contact_dict = {}
-        self.user_dict = {}
-        self.username = jid"""
 
         if self.action_info[0] == 1:    
+            #SIGN UP 
             self.add_event_handler("session_start", self.start)
-       
-        elif self.action_info[0] == 2:
 
+
+        elif self.action_info[0] == 2:
+            #SEND MESSAGE
             self.recipient = self.action_info[1]
             self.msg = self.action_info[2]
 
-            self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
-            self.register_plugin('xep_0096') # Jabber Search
-
-            self.add_event_handler("msg_start", self.msg_start)
+            self.add_event_handler("session_start", self.msg_start)
             self.add_event_handler("message", self.message)
-            
-            
-
-            '''self.register_plugin('xep_0030') # Service Discovery
-            self.register_plugin('xep_0199') # XMPP Ping'''
-            
-
-        elif self.action_info[0] == 3:
-            self.add_event_handler("file_start", self.file_start)
-            self.add_event_handler("file", self.file)
-            
-        elif self.action_info[0] == 4:
-            self.add_event_handler("showall_start", self.showall_start)
-            #self.add_event_handler("showallcontacts", self.showallcontacts)
             
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0199') # XMPP Ping
             self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
             self.register_plugin('xep_0096') # Jabber Search
+            
+        elif self.action_info[0] == 3:
+            self.add_event_handler("showall_start", self.showall_start)
+            #self.add_event_handler("showallcontacts", self.showallcontacts)
 
             self.presences = threading.Event()
             self.contacts = []
@@ -111,7 +66,7 @@ class XMPP_CHAT(ClientXMPP):
             self.show = True
             self.message = ""
 
-        elif self.action_info[0] == 5:
+        elif self.action_info[0] == 4:
             self.add_event_handler("addc_start", self.addc_start)
             self.add_event_handler("addcontact", self.addcontact)
 
@@ -135,69 +90,36 @@ class XMPP_CHAT(ClientXMPP):
             self.add_event_handler("msgr_start", self.msgr_start)
             self.add_event_handler("msgroom", self.msgroom)
 
-        """self.received = set()
-        self.contacts = []
-        self.presences_received = threading.Event()
-
-        self.register_plugin('xep_0030')  # Service Discovery
-        self.register_plugin('xep_0199')  # XMPP Ping
-        self.register_plugin('xep_0004')  # Data forms
-        self.register_plugin('xep_0077')  # In-band Registration
-        self.register_plugin('xep_0045')  # Mulit-User Chat (MUC)
-        self.register_plugin('xep_0096')  # Jabber Search
-        self.register_plugin('xep_0065')
-        self.register_plugin('xep_0066')
-        self.register_plugin('xep_0050')
-        self.register_plugin('xep_0047')
-        self.register_plugin('xep_0231')
-
-        #TR to connect
-        if self.connect():
-            print("You have succesfully Loged In")
-            self.process(block=False)
-        else:
-            print("We could not connect to @alumchat.xyz")
-        self.register_plugin('xep_0030') # Service Discovery
-        self.register_plugin('xep_0199') # XMPP Ping
-
-        # Connect to the XMPP server and start processing XMPP stanzas.
-        self.connect()
-        self.process(forever=False)"""
-        self.register_plugin('xep_0030') # Service Discovery
-        self.register_plugin('xep_0199') # XMPP Ping
-        self.register_plugin('xep_0004') # Data Forms
-        self.register_plugin('xep_0060') # PubSub
 
     #Log in with a previous created user
-    def start(self, event):
-        self.send_presence('chat', 'hello world!')
-        self.get_roster()
-        
-
-    async def msg_start(self, event):
-        self.send_presence('chat', 'hello world!')
+    async def start(self, event):
+        self.send_presence()
         await self.get_roster()
-        print("async function")
+        
+    #Log in with a previous created user and send a message
+    async def msg_start(self, event):
+        self.send_presence()
+        await self.get_roster()
+        print("She/He is typing ...")
         self.send_message(mto=self.recipient, 
                         mbody=self.msg, 
                         mtype='chat')
-    
+        
+    #Receive and print message from the sender
     def message(self, msg):
-        print(msg)
         #Print message
         if msg['type'] in ('chat'):
-            recipient = msg['to']
-            body = msg['body']
             
-            #print the message and the recipient
-            print(str(recipient) +  ": " + str(body))
-
-            #Ask new message
-            message = input("Write the message: ")
-
-            #Send message
-            self.send_message(mto=self.recipient,
-                              mbody=self.msg)
+            sender = str(msg['from']).split("/")
+            recipient = str(msg['to']).split("/")
+            body = msg['body']
+            print("\n>> DM from: " + str(sender[0]) + "\n>> DM to: " + str(recipient[0]) +  "\n>> DM body: " + str(body))
+            message = input("\nInput 'E' if you want to close DM\nMessage: ")
+            if message == "E" or message == "e":
+                self.disconnect()
+            else:
+                self.send_message(mto=self.recipient,
+                                mbody=message, mtype='chat')
 
     async def showall_start(self, event):
         #Send presence
