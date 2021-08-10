@@ -73,6 +73,7 @@ class XMPP_CHAT(ClientXMPP):
             
 
         elif self.action_info[0] == 4:
+            #ADD CONTACT TO ROSTER
             self.add_event_handler("session_start", self.addc_start)
             self.new_contact = self.action_info[1]
 
@@ -80,7 +81,21 @@ class XMPP_CHAT(ClientXMPP):
             self.register_plugin('xep_0199') # XMPP Ping
             self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
             self.register_plugin('xep_0096') # Jabber Search
-            
+        
+        elif self.action_info[0] == 5:
+            #SHOW ONE CONTACT DETAILS
+            self.add_event_handler("session_start", self.showall_start)
+
+            self.presences = threading.Event()
+            self.contacts = []
+            self.user = self.action_info[1]
+            self.show = True
+            self.message = ""
+
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0199') # XMPP Ping
+            self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
+            self.register_plugin('xep_0096') # Jabber Search
 
         elif self.action_info[0] == 6:
             self.add_event_handler("deleteacc_start", self.deleteacc_start)
@@ -88,8 +103,9 @@ class XMPP_CHAT(ClientXMPP):
 
             
         elif self.action_info[0] == 7:
+            #SHOW ONE CONTACT DETAILS
             self.add_event_handler("showone_start", self.showone_start)
-            self.add_event_handler("showone", self.showone)
+            self.focus_contact = self.action_info[1]
         elif self.action_info[0] == 8:
             self.add_event_handler("joinr_start", self.joinr_start)
             self.add_event_handler("joinroom", self.joinroom)
@@ -146,12 +162,12 @@ class XMPP_CHAT(ClientXMPP):
             print("Something went wrong", e)
         except IqTimeout:
             #Server error
-            print("THE SERVER IS NOT WITH YOU")
+            print("The server doesn't worl")
         
         #Wait for presences
         self.presences.wait(3)
 
-        #For each client on roster
+        #For each user on the roster
         my_roster = self.client_roster.groups()
         for group in my_roster:
             for user in my_roster[group]:
@@ -177,15 +193,15 @@ class XMPP_CHAT(ClientXMPP):
                 ])
                 self.contacts = my_contacts
 
-        #If want to show the details of user or users
+        #Print the details
         if(self.show):
 
-            #If want to show message of eveyone
+            #Show all contacts
             if(not self.user):
 
                 #Check if it is empty
                 if len(my_contacts)==0:
-                    print('NO CONTACTS CONNECTED')
+                    print('Zero contacts #ForeverAlone')
                 else:
                     print('\n USERS: \n\n')
 
@@ -193,14 +209,14 @@ class XMPP_CHAT(ClientXMPP):
                 for contact in my_contacts:
                     print('\tJID:' + contact[0] + '\t\tSUBSCRIPTION:' + contact[1] + '\t\tSTATUS:' + contact[2])
             
-            #If want to show message of specific user
+            #Show specific contatc
             else:
                 print('\n\n')
                 for contact in my_contacts:
-                    if(contact[0]==self .user):
-                        print('\tJID:' + contact[0] + '\n\tSUBSCRIPTION:' + contact[1] + '\n\tSTATUS:' + contact[2] + '\n\tUSERNAME:' + contact[3] + '\n\tPRIORITY:' + contact[4])
+                    if(contact[0]==self.user):
+                        print('>> JID: ' + contact[0] + '\n>> SUBSCRIPTION: ' + contact[1] + '\n>> STATUS: ' + contact[2])
         
-        #If want to send presence message
+        #send presence message
         else:
             for JID in self.contacts:
                 self.notification_(JID, self.message, 'active')
@@ -230,7 +246,7 @@ class XMPP_CHAT(ClientXMPP):
         except IqTimeout:
             print("THE SERVER IS NOT WITH YOU")
 
-
+    #Add contact to roster
     async def addc_start(self, event):
         self.send_presence()
         await self.get_roster()
