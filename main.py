@@ -76,16 +76,19 @@ while(option >= 1 or option <= 1 ):
 
     elif (option == 2):
         print("\n========= Show All Contacts =========\n")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 4)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 3)
+        print("Loading ...")
         my_xmpp.connect()
-        my_xmpp.process(forever=False)  
+        my_xmpp.process(forever=False) 
+        option = print_menu() 
 
     elif (option == 3):
         print("\n========= Add user to roster =========\n")
         new_contact = input("Contact user: ")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 5, new_contact)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 4, new_contact)
         my_xmpp.connect()
         my_xmpp.process(forever=False)  
+        option = print_menu()
 
     if (option == 5):
         print("\n========= Sign Out =========\n")

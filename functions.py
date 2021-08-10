@@ -57,8 +57,8 @@ class XMPP_CHAT(ClientXMPP):
             self.register_plugin('xep_0096') # Jabber Search
             
         elif self.action_info[0] == 3:
-            self.add_event_handler("showall_start", self.showall_start)
-            #self.add_event_handler("showallcontacts", self.showallcontacts)
+            #SHOW ALL CONTACTS INFO
+            self.add_event_handler("session_start", self.showall_start)
 
             self.presences = threading.Event()
             self.contacts = []
@@ -66,10 +66,20 @@ class XMPP_CHAT(ClientXMPP):
             self.show = True
             self.message = ""
 
-        elif self.action_info[0] == 4:
-            self.add_event_handler("addc_start", self.addc_start)
-            self.add_event_handler("addcontact", self.addcontact)
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0199') # XMPP Ping
+            self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
+            self.register_plugin('xep_0096') # Jabber Search
+            
 
+        elif self.action_info[0] == 4:
+            self.add_event_handler("session_start", self.addc_start)
+            self.new_contact = self.action_info[1]
+
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0199') # XMPP Ping
+            self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
+            self.register_plugin('xep_0096') # Jabber Search
             
 
         elif self.action_info[0] == 6:
@@ -121,6 +131,7 @@ class XMPP_CHAT(ClientXMPP):
                 self.send_message(mto=self.recipient,
                                 mbody=message, mtype='chat')
 
+    #Show all contacts
     async def showall_start(self, event):
         #Send presence
         self.send_presence()
@@ -218,6 +229,16 @@ class XMPP_CHAT(ClientXMPP):
             print("Somethiing went wrong\n", e)
         except IqTimeout:
             print("THE SERVER IS NOT WITH YOU")
+
+
+    async def addc_start(self, event):
+        self.send_presence()
+        await self.get_roster()
+        try:
+            self.send_presence_subscription(pto = self.new_contact) 
+        except IqTimeout:
+            print("ERROR 500: server doesn't work") 
+        self.disconnect()
 
 
     def sign_out(self):
