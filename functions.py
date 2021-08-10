@@ -16,6 +16,7 @@ from argparse import ArgumentParser
 from slixmpp import ClientXMPP
 
 
+
 if sys.platform == 'win32' and sys.version_info >= (3, 8):
      asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -32,11 +33,15 @@ def sign_up(user, passw):
     else:
         return False
 
+def sign_out():
+        print("\nSuccesfully disconnected...")
+
         
 class XMPP_CHAT(ClientXMPP):
     def __init__(self, jid, password, *more_arguments):
         ClientXMPP.__init__(self, jid, password)
         self.action_info = more_arguments
+        self.my_user = jid
 
         if self.action_info[0] == 1:    
             #SIGN UP 
@@ -58,7 +63,7 @@ class XMPP_CHAT(ClientXMPP):
             
         elif self.action_info[0] == 3:
             #SHOW ALL CONTACTS INFO
-            self.add_event_handler("session_start", self.showall_start)
+            self.add_event_handler("session_start", self.showc_start)
 
             self.presences = threading.Event()
             self.contacts = []
@@ -84,7 +89,7 @@ class XMPP_CHAT(ClientXMPP):
         
         elif self.action_info[0] == 5:
             #SHOW ONE CONTACT DETAILS
-            self.add_event_handler("session_start", self.showall_start)
+            self.add_event_handler("session_start", self.showc_start)
 
             self.presences = threading.Event()
             self.contacts = []
@@ -98,23 +103,37 @@ class XMPP_CHAT(ClientXMPP):
             self.register_plugin('xep_0096') # Jabber Search
 
         elif self.action_info[0] == 6:
-            self.add_event_handler("deleteacc_start", self.deleteacc_start)
-            self.add_event_handler("deleteuser", self.deleteuser)
+            #JOIN CHAT ROOM
+            self.room = self.action_info[1]
+            self.room_name = self.action_info[2]
+
+            self.add_event_handler("session_start", self.joinroom_start)
+            self.add_event_handler("groupchat_message", self.muc_message)
+            self.add_event_handler("muc::%s::got_online" % self.room, self.muc_online)
 
             
-        elif self.action_info[0] == 7:
-            #SHOW ONE CONTACT DETAILS
-            self.add_event_handler("showone_start", self.showone_start)
-            self.focus_contact = self.action_info[1]
-        elif self.action_info[0] == 8:
-            self.add_event_handler("joinr_start", self.joinr_start)
-            self.add_event_handler("joinroom", self.joinroom)
+
+            self.register_plugin('xep_0030')
+            self.register_plugin('xep_0045')
+            self.register_plugin('xep_0199')
+
         elif self.action_info[0] == 9:
-            self.add_event_handler("creater_start", self.creater_start)
-            self.add_event_handler("createroom", self.createroom)
+            #SEND A FILE
+            self.add_event_handler("session_start", self.file_start)
+
+            self.receiver = self.action_info[1]
+            self.file = open(self.action_info[2], 'rb')
+
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0065') # SOCKS5 Bytestreams
+        
         elif self.action_info[0] == 10:
-            self.add_event_handler("msgr_start", self.msgr_start)
-            self.add_event_handler("msgroom", self.msgroom)
+            #DELETE USER
+            self.add_event_handler("session_start", self.delete_start)
+
+            
+        
+
 
 
     #Log in with a previous created user
@@ -148,7 +167,7 @@ class XMPP_CHAT(ClientXMPP):
                                 mbody=message, mtype='chat')
 
     #Show all contacts
-    async def showall_start(self, event):
+    async def showc_start(self, event):
         #Send presence
         self.send_presence()
         await self.get_roster()
@@ -162,7 +181,7 @@ class XMPP_CHAT(ClientXMPP):
             print("Something went wrong", e)
         except IqTimeout:
             #Server error
-            print("The server doesn't worl")
+            print("The server doesn't work")
         
         #Wait for presences
         self.presences.wait(3)
@@ -201,14 +220,13 @@ class XMPP_CHAT(ClientXMPP):
 
                 #Check if it is empty
                 if len(my_contacts)==0:
-                    print('Zero contacts #ForeverAlone')
-                else:
-                    print('\n USERS: \n\n')
+                    print('Zero contacts #LonelyLife')
 
                 #Print all
                 for contact in my_contacts:
-                    print('\tJID:' + contact[0] + '\t\tSUBSCRIPTION:' + contact[1] + '\t\tSTATUS:' + contact[2])
-            
+                    if len(contact[0]) > 3:
+                        print('>> JID: ' + contact[0] + '\n>> SUBSCRIPTION: ' + contact[1] + '\n>> STATUS: ' + contact[2]+ "\n")
+                    
             #Show specific contatc
             else:
                 print('\n\n')
@@ -244,7 +262,7 @@ class XMPP_CHAT(ClientXMPP):
         except IqError as e:
             print("Somethiing went wrong\n", e)
         except IqTimeout:
-            print("THE SERVER IS NOT WITH YOU")
+            print("ERROR 500: server doesn't work")
 
     #Add contact to roster
     async def addc_start(self, event):
@@ -252,14 +270,86 @@ class XMPP_CHAT(ClientXMPP):
         await self.get_roster()
         try:
             self.send_presence_subscription(pto = self.new_contact) 
-        except IqTimeout:
-            print("ERROR 500: server doesn't work") 
+        except IqTimeout as e:
+            print("ERROR 500: server doesn't work", e) 
         self.disconnect()
 
+    #Room communication
+    async def joinroom_start(self, event):
+        #Send events to muc
+        await self.get_roster()
+        self.send_presence()
+        self.plugin['xep_0045'].join_muc(self.room, self.room_name)
 
-    def sign_out(self):
-        self.disconnect(wait=True)
-        print("Disconnected")
+        #Message to send
+        message = input("Message: ")
+        self.send_message(mto=self.room,
+                          mbody=message,
+                          mtype='groupchat')
+
+    #Handle muc message
+    def muc_message(self, msg):
+        if(str(msg['from']).split('/')[1]!=self.room_name):
+            print(str(msg['from']).split('/')[1] + ": " + msg['body'])
+            message = input("Message: ")
+            self.send_message(mto=msg['from'].bare,
+                              mbody=message,
+                              mtype='groupchat')
+
+    #Send message to group
+    def muc_online(self, presence):
+        if presence['muc']['nick'] != self.room_name:
+            self.send_message(mto=presence['from'].bare,
+                              mbody="Hello, %s %s" % (presence['muc']['role'],
+                                                      presence['muc']['nick']),
+                              mtype='groupchat')
+
+
+    #Send a file
+    async def file_start(self, event):
+        try:
+            #Set the receiver
+            proxy = await self['xep_0065'].handshake(self.receiver)
+            while True:
+                data = self.file.read(1048576)
+                if not data:
+                    break
+                await proxy.write(data)
+
+            proxy.transport.write_eof()
+        except (IqError, IqTimeout) as e:
+            #Something went wrong
+            print('We can not transfer file', e)
+        else:
+            #File transfer
+            print('File succesfully transfered')
+        finally:
+            self.file.close()
+            self.disconnect()
+    
+
+    #Delete the account
+    async def delete_start(self, event):
+        self.send_presence()
+        await self.get_roster()
+        
+        delete = self.Iq()
+        delete['type'] = 'set'
+        delete['from'] = self.my_user
+        fragment = ET.fromstring("<query xmlns='jabber:iq:register'><remove/></query>")
+        delete.append(fragment)
+
+        try:
+            delete.send()
+            print("User succesfully deleted\n")
+            self.disconnect()
+        except IqError as e:
+            print("Something went wrong", e)
+        except IqTimeout:
+            print("ERROR 500: server doesn't work")
+        #except Exception as e:
+         #   print(e)  
+    
 
 
 
