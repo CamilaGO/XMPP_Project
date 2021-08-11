@@ -112,10 +112,11 @@ while(option >= 1):
     
     elif (option == 6):
         print("\n========= Send Notification =========\n")
-        #7
+        #7 FALTA
     
     elif (option == 7):
         print("\n========= Send a File =========\n")
+        #No srive aun  ):
         recipient = input("Recipient username: ") 
         file = input("File path: ") 
         my_xmpp = functions.XMPP_CHAT(user, passw, 8, recipient, file, new_status)

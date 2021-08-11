@@ -130,9 +130,9 @@ class XMPP_CHAT(ClientXMPP):
             self.add_event_handler("session_start", self.file_start)
 
             self.receiver = self.action_info[1]
-            self.file = open(self.action_info[2], 'rb')
+            self.file = self.action_info[2]
             self.new_status = self.action_info[3]
-
+            
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0065') # SOCKS5 Bytestreams
 
