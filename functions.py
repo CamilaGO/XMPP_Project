@@ -42,6 +42,7 @@ class XMPP_CHAT(ClientXMPP):
         ClientXMPP.__init__(self, jid, password)
         self.action_info = more_arguments
         self.my_user = jid
+        self.new_status = ""
 
         if self.action_info[0] == 1:    
             #SIGN UP 
@@ -52,6 +53,7 @@ class XMPP_CHAT(ClientXMPP):
             #SEND MESSAGE
             self.recipient = self.action_info[1]
             self.msg = self.action_info[2]
+            self.new_status = self.action_info[3]
 
             self.add_event_handler("session_start", self.msg_start)
             self.add_event_handler("message", self.message)
@@ -70,6 +72,7 @@ class XMPP_CHAT(ClientXMPP):
             self.user = None
             self.show = True
             self.message = ""
+            self.new_status = self.action_info[1]
 
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0199') # XMPP Ping
@@ -81,6 +84,7 @@ class XMPP_CHAT(ClientXMPP):
             #ADD CONTACT TO ROSTER
             self.add_event_handler("session_start", self.addc_start)
             self.new_contact = self.action_info[1]
+            self.new_status = self.action_info[2]
 
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0199') # XMPP Ping
@@ -96,6 +100,7 @@ class XMPP_CHAT(ClientXMPP):
             self.user = self.action_info[1]
             self.show = True
             self.message = ""
+            self.new_status = self.action_info[2]
 
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0199') # XMPP Ping
@@ -106,6 +111,7 @@ class XMPP_CHAT(ClientXMPP):
             #JOIN CHAT ROOM
             self.room = self.action_info[1]
             self.room_name = self.action_info[2]
+            self.new_status = self.action_info[3]
 
             self.add_event_handler("session_start", self.joinroom_start)
             self.add_event_handler("groupchat_message", self.room_message)
@@ -125,6 +131,7 @@ class XMPP_CHAT(ClientXMPP):
 
             self.receiver = self.action_info[1]
             self.file = open(self.action_info[2], 'rb')
+            self.new_status = self.action_info[3]
 
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0065') # SOCKS5 Bytestreams
@@ -138,6 +145,7 @@ class XMPP_CHAT(ClientXMPP):
             self.user = None
             self.show = False
             self.message = self.action_info[1]
+            self.new_status = self.action_info[2]
 
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0199') # XMPP Ping
@@ -147,7 +155,19 @@ class XMPP_CHAT(ClientXMPP):
         
         elif self.action_info[0] == 10:
             #DEFINE STATUS
-            print(self._status)
+            self.new_status = self.action_info[1]
+            self.add_event_handler("session_start", self.status_start)
+
+            self.presences = threading.Event()
+            self.contacts = []
+            self.user = None
+            self.show = True
+            self.message = ""
+
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0199') # XMPP Ping
+            self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
+            self.register_plugin('xep_0096') # Jabber Search
         
         elif self.action_info[0] == 11:
             #DELETE USER
@@ -158,12 +178,20 @@ class XMPP_CHAT(ClientXMPP):
 
     #Log in with a previous created user
     async def start(self, event):
-        self.send_presence()
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+        
         await self.get_roster()
         
-    #Log in with a previous created user and send a message
+    #Send a message to a contact
     async def msg_start(self, event):
-        self.send_presence()
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+        
         await self.get_roster()
         print("She/He is typing ...")
         self.send_message(mto=self.recipient, 
@@ -189,7 +217,11 @@ class XMPP_CHAT(ClientXMPP):
     #Show all contacts
     async def showc_start(self, event):
         #Send presence
-        self.send_presence()
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+
         await self.get_roster()
 
         my_contacts = []
@@ -288,7 +320,11 @@ class XMPP_CHAT(ClientXMPP):
 
     #Add contact to roster
     async def addc_start(self, event):
-        self.send_presence()
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+
         await self.get_roster()
         try:
             self.send_presence_subscription(pto = self.new_contact) 
@@ -300,7 +336,12 @@ class XMPP_CHAT(ClientXMPP):
     async def joinroom_start(self, event):
         #Send events to muc
         await self.get_roster()
-        self.send_presence()
+        
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+
         self.plugin['xep_0045'].join_muc(self.room, self.room_name)
 
         #Message to send
@@ -369,8 +410,93 @@ class XMPP_CHAT(ClientXMPP):
             print("Something went wrong", e)
         except IqTimeout:
             print("ERROR 500: server doesn't work")
-        #except Exception as e:
-        #   print(e)  
+        except Exception as e:
+           print(e) 
+
+
+    #Change status and show profile info updated
+    async def status_start(self, event):
+        self.send_presence('chat', self.new_status)
+        await self.get_roster() 
+
+        #Send presence
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+
+        await self.get_roster()
+
+        my_contacts = []
+        try:
+            #Check the roster
+            self.get_roster()
+        except IqError as e:
+            #If there is an error
+            print("Something went wrong", e)
+        except IqTimeout:
+            #Server error
+            print("The server doesn't work")
+        
+        #Wait for presences
+        self.presences.wait(3)
+
+        #For each user on the roster
+        my_roster = self.client_roster.groups()
+        for group in my_roster:
+            for user in my_roster[group]:
+                status = show = answer = priority = ''
+                self.contacts.append(user)
+                subs = self.client_roster[user]['subscription']                         #Get subscription
+                conexions = self.client_roster.presence(user)                           
+                username = self.client_roster[user]['name']   
+                print(username)                          #Get username
+                for answer, pres in conexions.items():
+                    if pres['show']:
+                        show = pres['show']                                             #Get show
+                    if pres['status']:
+                        status = pres['status']                                         #Get status
+                    if pres['priority']:
+                        priority = pres['priority']                                     #Get priority
+                
+                my_contacts.append([
+                    user,
+                    subs,
+                    status,
+                    username,
+                    priority
+                ])
+                self.contacts = my_contacts
+
+        #Print the details
+        if(self.show):
+
+            #Show all contacts
+            if(not self.user):
+
+                #Check if it is empty
+                if len(my_contacts)==0:
+                    print('Zero contacts #LonelyLife')
+
+                #Print all
+                #for contact in my_contacts:
+                 #   if len(contact[0]) > 3:
+                print('>> JID: ' + my_contacts[0][0] + '\n>> SUBSCRIPTION: ' + my_contacts[0][1] + '\n>> STATUS: ' + my_contacts[0][2]+ "\n")
+                    
+            #Show specific contatc
+            else:
+                print('\n\n')
+                for contact in my_contacts:
+                    if(contact[0]==self.user):
+                        print('>> JID: ' + contact[0] + '\n>> SUBSCRIPTION: ' + contact[1] + '\n>> STATUS: ' + contact[2])
+        
+        #send presence message
+        else:
+            for JID in self.contacts:
+                self.presence_msg(JID, self.message, 'active')
+            print("Task done!")
+
+        self.disconnect()
     
     
 

@@ -6,7 +6,7 @@ user_xmpp = None
 
 def print_menu():
     print("\n-_-_-_-_-_-_-_-_-_ MENU @alumchat.xyz _-_-_-_-_-_-_-_-_-")
-    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show details of a contact\n5: Join Chat room\n6: Send Notification\n7: Send a File\n8: Define Presence Message\n9: Define Status\n10: Delete account  [ DANGER ] \n11: Sign out / Exit\n")
+    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show details of a contact\n5: Join Chat room\n6: Send Notification\n7: Send a File\n8: Define Presence Message\n9: Change Status\n10: Delete account  [ DANGER ] \n11: Sign out / Exit\n")
     menu_option = int(input("Select an option: "))
     return menu_option
 
@@ -22,7 +22,7 @@ def first_menu():
 
 print("************************* CHAT XMPP *************************")
 initiation = first_menu()  
-user, passw = "", ""
+user, passw, new_status = "", "", ""
 logging.basicConfig()
 
 if (initiation==1):
@@ -71,14 +71,14 @@ while(option >= 1):
         recipient = input("Recipient username: ") #echobot@alumchat.xyz
         msg = input("Message: ") 
         print("Sending ......")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 2, recipient, msg)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 2, recipient, msg, new_status)
         my_xmpp.connect()
         my_xmpp.process(forever=False)
         option = print_menu()
 
     elif (option == 2):
         print("\n========= Show All Contacts =========\n")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 3)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 3, new_status)
         print("Loading ...")
         my_xmpp.connect()
         my_xmpp.process(forever=False) 
@@ -87,7 +87,7 @@ while(option >= 1):
     elif (option == 3):
         print("\n========= Add User to Roster =========\n")
         new_contact = input("New contact username: ")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 4, new_contact)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 4, new_contact, new_status)
         my_xmpp.connect()
         my_xmpp.process(forever=False)  
         option = print_menu()
@@ -95,7 +95,7 @@ while(option >= 1):
     elif (option == 4):
         print("\n========= Show Contact Details =========\n")
         contact = input("Contact username: ")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 5, contact)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 5, contact, new_status)
         print("Loading ...\n")
         my_xmpp.connect()
         my_xmpp.process(forever=False)  
@@ -104,8 +104,8 @@ while(option >= 1):
     elif (option == 5):
         print("\n========= Join Chat Room =========\n")
         room = input("Room JID: ")  #@conference.alumchat.xyz
-        room_name = input("Room name: ")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 6, room, room_name)
+        nick_name = input("Your nickname: ")
+        my_xmpp = functions.XMPP_CHAT(user, passw, 6, room, nick_name, new_status)
         my_xmpp.connect()
         my_xmpp.process(forever=False)
         option = print_menu()
@@ -118,7 +118,7 @@ while(option >= 1):
         print("\n========= Send a File =========\n")
         recipient = input("Recipient username: ") 
         file = input("File path: ") 
-        my_xmpp = functions.XMPP_CHAT(user, passw, 8, recipient, file)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 8, recipient, file, new_status)
         my_xmpp.connect()
         my_xmpp.process(forever=False)
         option = print_menu()
@@ -126,7 +126,7 @@ while(option >= 1):
     elif (option == 8):
         print("\n========= Presence Message =========\n")
         pmsg = input("Presence Message: ")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 9, pmsg)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 9, pmsg, new_status)
         print("Loading ...")
         my_xmpp.connect()
         my_xmpp.process(forever=False)
@@ -134,7 +134,12 @@ while(option >= 1):
     
     elif (option == 9):
         print("\n========= Define Status =========\n")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 10)
+        new_status = input('New Status: ') 
+        my_xmpp = functions.XMPP_CHAT(user, passw, 10, new_status)
+        my_xmpp.connect()
+        print("Updating ...")
+        my_xmpp.process(forever=False)
+        option = print_menu()
     
         
     elif (option == 10):
