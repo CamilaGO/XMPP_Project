@@ -47,7 +47,7 @@ if (initiation==1):
 
 elif (initiation==2):
     print("\n========= Sign In =========\n")
-    user = input("Username: ") #gon18398@alumchat.xyz / camila@alumchat.xyz 
+    user = input("Username: ") #gon18398@alumchat.xyz / paula@alumchat.xyz 
     passw = input("Password: ") #123  /  123*
     my_xmpp = functions.XMPP_CHAT(user, passw, 1)
     my_xmpp.connect()

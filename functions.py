@@ -62,6 +62,7 @@ class XMPP_CHAT(ClientXMPP):
             self.register_plugin('xep_0199') # XMPP Ping
             self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
             self.register_plugin('xep_0096') # Jabber Search
+            self.register_plugin('xep_0085') # Chat State Notifications
             
         elif self.action_info[0] == 3:
             #SHOW ALL CONTACTS INFO
@@ -210,12 +211,28 @@ class XMPP_CHAT(ClientXMPP):
             recipient = str(msg['to']).split("/")
             body = msg['body']
             print("\n>> DM from: " + str(sender[0]) + "\n>> DM to: " + str(recipient[0]) +  "\n>> DM body: " + str(body))
+            self.change_status(self.recipient, 'composing')
             message = input("\nInput 'E' if you want to close DM\nMessage: ")
+            self.change_status(self.recipient, 'paused')
             if message == "E" or message == "e":
+                self.change_status(self.recipient, 'gone')
                 self.disconnect()
             else:
                 self.send_message(mto=self.recipient,
                                 mbody=message, mtype='chat')
+    
+    #Send notification
+    def change_status(self, to , status):
+        msg = self.make_message(
+            mto=to,
+            mfrom=self.boundjid.bare,
+            mtype='chat'
+        )
+
+        msg['chat_state'] = status
+        msg.send()
+
+
 
     #Show all contacts
     async def showc_start(self, event):
