@@ -130,11 +130,14 @@ class XMPP_CHAT(ClientXMPP):
             self.add_event_handler("session_start", self.file_start)
 
             self.receiver = self.action_info[1]
-            self.file = self.action_info[2]
+            self.file = open(self.action_info[2], 'rb')
             self.new_status = self.action_info[3]
+            self.use_messages = True
             
             self.register_plugin('xep_0030') # Service Discovery
-            self.register_plugin('xep_0065') # SOCKS5 Bytestreams
+            self.register_plugin('xep_0047') # In-band Bytestreams
+            #self.register_plugin('xep_0030') # Service Discovery
+            #self.register_plugin('xep_0065') # SOCKS5 Bytestreams
 
         elif self.action_info[0] == 9:
             #PRESENCE MESSAGE
@@ -370,7 +373,32 @@ class XMPP_CHAT(ClientXMPP):
 
     #Send a file
     async def file_start(self, event):
+        # https://github.com/poezio/slixmpp/blob/master/examples/ibb_transfer/ibb_sender.py
+        await self.get_roster()
+        
+        if (self.new_status != ""):
+            self.send_presence('chat', self.new_status)
+        else:
+            self.send_presence('chat', 'The future is vegan!')
+        
         try:
+            # Open the IBB stream in which to write to.
+            stream = await self['xep_0047'].open_stream(self.receiver, use_messages=self.use_messages)
+
+            # If you want to send in-memory bytes, use stream.sendall() instead.
+            await stream.sendfile(self.file)
+
+            # And finally close the stream.
+            await stream.close()
+        except (IqError, IqTimeout):
+            print('File transfer errored')
+        else:
+            print('File transfer finished')
+        finally:
+            self.file.close()
+            self.disconnect()
+            
+        '''try:
             #Set the receiver
             proxy = await self['xep_0065'].handshake(self.receiver)
             while True:
@@ -388,7 +416,7 @@ class XMPP_CHAT(ClientXMPP):
             print('File succesfully transfered')
         finally:
             self.file.close()
-            self.disconnect()
+            self.disconnect()'''
     
 
     #Delete the account
