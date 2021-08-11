@@ -108,7 +108,7 @@ class XMPP_CHAT(ClientXMPP):
             self.room_name = self.action_info[2]
 
             self.add_event_handler("session_start", self.joinroom_start)
-            self.add_event_handler("groupchat_message", self.muc_message)
+            self.add_event_handler("groupchat_message", self.room_message)
             self.add_event_handler("muc::%s::got_online" % self.room, self.muc_online)
 
             
@@ -130,11 +130,23 @@ class XMPP_CHAT(ClientXMPP):
         elif self.action_info[0] == 10:
             #DELETE USER
             self.add_event_handler("session_start", self.delete_start)
+        
+        elif self.action_info[0] == 11:
+            #PRESENCE MESSAGE
+            self.add_event_handler("session_start", self.showc_start)
+
+            self.presences = threading.Event()
+            self.contacts = []
+            self.user = None
+            self.show = False
+            self.message = self.action_info[1]
+
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0199') # XMPP Ping
+            self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
+            self.register_plugin('xep_0096') # Jabber Search
 
             
-        
-
-
 
     #Log in with a previous created user
     async def start(self, event):
@@ -194,7 +206,8 @@ class XMPP_CHAT(ClientXMPP):
                 self.contacts.append(user)
                 subs = self.client_roster[user]['subscription']                         #Get subscription
                 conexions = self.client_roster.presence(user)                           
-                username = self.client_roster[user]['name']                             #Get username
+                username = self.client_roster[user]['name']   
+                print(username)                          #Get username
                 for answer, pres in conexions.items():
                     if pres['show']:
                         show = pres['show']                                             #Get show
@@ -202,15 +215,15 @@ class XMPP_CHAT(ClientXMPP):
                         status = pres['status']                                         #Get status
                     if pres['priority']:
                         priority = pres['priority']                                     #Get priority
-
-                my_contacts.append([
-                    user,
-                    subs,
-                    status,
-                    username,
-                    priority
-                ])
-                self.contacts = my_contacts
+                if len(username) > 3:
+                    my_contacts.append([
+                        user,
+                        subs,
+                        status,
+                        username,
+                        priority
+                    ])
+                    self.contacts = my_contacts
 
         #Print the details
         if(self.show):
@@ -237,12 +250,12 @@ class XMPP_CHAT(ClientXMPP):
         #send presence message
         else:
             for JID in self.contacts:
-                self.notification_(JID, self.message, 'active')
+                self.presence_msg(JID, self.message, 'active')
+            print("Task done!")
 
         self.disconnect()
-        print('\n\n')
     
-    def notification_(self, to, body, my_type):
+    def presence_msg(self, to, body, my_type):
 
         message = self.Message()
         message['to'] = to
@@ -263,6 +276,7 @@ class XMPP_CHAT(ClientXMPP):
             print("Somethiing went wrong\n", e)
         except IqTimeout:
             print("ERROR 500: server doesn't work")
+        
 
     #Add contact to roster
     async def addc_start(self, event):
@@ -287,8 +301,8 @@ class XMPP_CHAT(ClientXMPP):
                           mbody=message,
                           mtype='groupchat')
 
-    #Handle muc message
-    def muc_message(self, msg):
+    #Handle muc message for room
+    def room_message(self, msg):
         if(str(msg['from']).split('/')[1]!=self.room_name):
             print(str(msg['from']).split('/')[1] + ": " + msg['body'])
             message = input("Message: ")
@@ -348,7 +362,8 @@ class XMPP_CHAT(ClientXMPP):
         except IqTimeout:
             print("ERROR 500: server doesn't work")
         #except Exception as e:
-         #   print(e)  
+        #   print(e)  
+    
     
 
 

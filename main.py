@@ -6,7 +6,7 @@ user_xmpp = None
 
 def print_menu():
     print("\n-_-_-_-_-_-_-_-_-_ MENU @alumchat.xyz _-_-_-_-_-_-_-_-_-")
-    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show contact details\n5: Join Chat room\n6: Create a Room\n7: Send DM to room\n8: Send a File\n9: Delete a user\n10: Sign out / Exit\n")
+    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show contact details\n5: Join Chat room\n6: Send Notification\n7: Send a File\n8: Define Presence Message\n9: Delete account  [ DANGER ] \n10: Sign out / Exit\n")
     menu_option = int(input("Select an option: "))
     return menu_option
 
@@ -110,7 +110,10 @@ while(option >= 1):
         my_xmpp.process(forever=False)
         option = print_menu()
     
-    elif (option == 8):
+    elif (option == 6):
+        print("\n========= Send Notification =========\n")
+    
+    elif (option == 7):
         print("\n========= Send a File =========\n")
         recipient = input("Recipient username: ") 
         file = input("File path: ") 
@@ -119,6 +122,15 @@ while(option >= 1):
         my_xmpp.process(forever=False)
         option = print_menu()
 
+    elif (option == 8):
+        print("\n========= Presence Message =========\n")
+        pmsg = input("Presence Message: ")
+        my_xmpp = functions.XMPP_CHAT(user, passw, 11, pmsg)
+        print("Loading ...")
+        my_xmpp.connect()
+        my_xmpp.process(forever=False)
+        option = print_menu()
+        
     elif (option == 9):
         print("\n========= Delete User =========\n")
         my_xmpp = functions.XMPP_CHAT(user, passw, 10)
