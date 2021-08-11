@@ -111,13 +111,15 @@ class XMPP_CHAT(ClientXMPP):
             self.add_event_handler("groupchat_message", self.room_message)
             self.add_event_handler("muc::%s::got_online" % self.room, self.muc_online)
 
-            
-
             self.register_plugin('xep_0030')
             self.register_plugin('xep_0045')
             self.register_plugin('xep_0199')
-
-        elif self.action_info[0] == 9:
+        
+        elif self.action_info[0] == 7:
+            #SEND NOTIFICATION
+            print("aun no")
+            
+        elif self.action_info[0] == 8:
             #SEND A FILE
             self.add_event_handler("session_start", self.file_start)
 
@@ -126,12 +128,8 @@ class XMPP_CHAT(ClientXMPP):
 
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0065') # SOCKS5 Bytestreams
-        
-        elif self.action_info[0] == 10:
-            #DELETE USER
-            self.add_event_handler("session_start", self.delete_start)
-        
-        elif self.action_info[0] == 11:
+
+        elif self.action_info[0] == 9:
             #PRESENCE MESSAGE
             self.add_event_handler("session_start", self.showc_start)
 
@@ -145,6 +143,16 @@ class XMPP_CHAT(ClientXMPP):
             self.register_plugin('xep_0199') # XMPP Ping
             self.register_plugin('xep_0045') # Mulit-User Chat (MUC)
             self.register_plugin('xep_0096') # Jabber Search
+            
+        
+        elif self.action_info[0] == 10:
+            #DEFINE STATUS
+            print(self._status)
+        
+        elif self.action_info[0] == 11:
+            #DELETE USER
+            self.add_event_handler("session_start", self.delete_start)
+            
 
             
 
@@ -215,15 +223,15 @@ class XMPP_CHAT(ClientXMPP):
                         status = pres['status']                                         #Get status
                     if pres['priority']:
                         priority = pres['priority']                                     #Get priority
-                if len(username) > 3:
-                    my_contacts.append([
-                        user,
-                        subs,
-                        status,
-                        username,
-                        priority
-                    ])
-                    self.contacts = my_contacts
+                
+                my_contacts.append([
+                    user,
+                    subs,
+                    status,
+                    username,
+                    priority
+                ])
+                self.contacts = my_contacts
 
         #Print the details
         if(self.show):
@@ -255,6 +263,7 @@ class XMPP_CHAT(ClientXMPP):
 
         self.disconnect()
     
+    #Send presence message
     def presence_msg(self, to, body, my_type):
 
         message = self.Message()
@@ -275,8 +284,7 @@ class XMPP_CHAT(ClientXMPP):
         except IqError as e:
             print("Somethiing went wrong\n", e)
         except IqTimeout:
-            print("ERROR 500: server doesn't work")
-        
+            print("ERROR 500: server doesn't work")        
 
     #Add contact to roster
     async def addc_start(self, event):

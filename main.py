@@ -6,7 +6,7 @@ user_xmpp = None
 
 def print_menu():
     print("\n-_-_-_-_-_-_-_-_-_ MENU @alumchat.xyz _-_-_-_-_-_-_-_-_-")
-    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show contact details\n5: Join Chat room\n6: Send Notification\n7: Send a File\n8: Define Presence Message\n9: Delete account  [ DANGER ] \n10: Sign out / Exit\n")
+    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show details of a contact\n5: Join Chat room\n6: Send Notification\n7: Send a File\n8: Define Presence Message\n9: Define Status\n10: Delete account  [ DANGER ] \n11: Sign out / Exit\n")
     menu_option = int(input("Select an option: "))
     return menu_option
 
@@ -112,12 +112,13 @@ while(option >= 1):
     
     elif (option == 6):
         print("\n========= Send Notification =========\n")
+        #7
     
     elif (option == 7):
         print("\n========= Send a File =========\n")
         recipient = input("Recipient username: ") 
         file = input("File path: ") 
-        my_xmpp = functions.XMPP_CHAT(user, passw, 9, recipient, file)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 8, recipient, file)
         my_xmpp.connect()
         my_xmpp.process(forever=False)
         option = print_menu()
@@ -125,15 +126,20 @@ while(option >= 1):
     elif (option == 8):
         print("\n========= Presence Message =========\n")
         pmsg = input("Presence Message: ")
-        my_xmpp = functions.XMPP_CHAT(user, passw, 11, pmsg)
+        my_xmpp = functions.XMPP_CHAT(user, passw, 9, pmsg)
         print("Loading ...")
         my_xmpp.connect()
         my_xmpp.process(forever=False)
         option = print_menu()
-        
+    
     elif (option == 9):
-        print("\n========= Delete User =========\n")
+        print("\n========= Define Status =========\n")
         my_xmpp = functions.XMPP_CHAT(user, passw, 10)
+    
+        
+    elif (option == 10):
+        print("\n========= Delete User =========\n")
+        my_xmpp = functions.XMPP_CHAT(user, passw, 11)
         print("Removing ...\n")
         my_xmpp.connect()
         my_xmpp.process(forever=False)
@@ -177,7 +183,7 @@ while(option >= 1):
         else:
             print("Invalid option")
 
-    elif (option == 10):
+    elif (option == 11):
         print("\n========= Sign Out =========\n")
         functions.sign_out()
         break
