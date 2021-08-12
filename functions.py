@@ -1,4 +1,9 @@
-""" Fuentes de consulta
+""" Paula Camila Gonzalez Ortega - 18398
+Redes - XMPPP chat project 
+
+This file contains the class made with ClientXMPP that cotains all the functions used in main.py 
+
+Fuentes de consulta
 https://slixmpp.readthedocs.io/en/latest/getting_started/sendlogout.html
 """
 import sys
@@ -239,32 +244,23 @@ class XMPP_CHAT(ClientXMPP):
 
     #Receive notifications in chat
     def status_active(self, chatstate):
-        # Recibir notificaciones
-        # logging.info(chatstate)
         print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is active"))
 
 
     def status_inactive(self, chatstate):
-        # Recibir notificaciones
         logging.info(chatstate)
         print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is inactive"))
 
 
     def status_composing(self, chatstate):
-        # Recibir notificaciones
-        # logging.info(chatstate)
         print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is typing..."))
 
 
     def status_paused(self, chatstate):
-        # Recibir notificaciones
-        # logging.info(chatstate)
         print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Stop typing"))
 
 
     def status_gone(self, chatstate):
-        # Recibir notificaciones
-        # logging.info(chatstate)
         print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is gone"))
 
     #Show all contacts
@@ -423,7 +419,7 @@ class XMPP_CHAT(ClientXMPP):
 
     #Send a file
     async def file_start(self, event):
-        # https://github.com/poezio/slixmpp/blob/master/examples/ibb_transfer/ibb_sender.py
+        # Fuente de consulta: https://github.com/poezio/slixmpp/blob/master/examples/ibb_transfer/ibb_sender.py
         await self.get_roster()
         
         if (self.new_status != ""):
@@ -447,26 +443,6 @@ class XMPP_CHAT(ClientXMPP):
         finally:
             self.file.close()
             self.disconnect()
-            
-        '''try:
-            #Set the receiver
-            proxy = await self['xep_0065'].handshake(self.receiver)
-            while True:
-                data = self.file.read(1048576)
-                if not data:
-                    break
-                await proxy.write(data)
-
-            proxy.transport.write_eof()
-        except (IqError, IqTimeout) as e:
-            #Something went wrong
-            print('We can not transfer file', e)
-        else:
-            #File transfer
-            print('File succesfully transfered')
-        finally:
-            self.file.close()
-            self.disconnect()'''
     
 
     #Delete the account
@@ -556,9 +532,7 @@ class XMPP_CHAT(ClientXMPP):
                 if len(my_contacts)==0:
                     print('Zero contacts #LonelyLife')
 
-                #Print all
-                #for contact in my_contacts:
-                 #   if len(contact[0]) > 3:
+                #Show his/her profile updated
                 print('>> JID: ' + my_contacts[0][0] + '\n>> SUBSCRIPTION: ' + my_contacts[0][1] + '\n>> STATUS: ' + my_contacts[0][2]+ "\n")
                     
             #Show specific contatc

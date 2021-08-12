@@ -1,3 +1,10 @@
+""" Paula Camila Gonzalez Ortega - 18398
+Redes - XMPPP chat project 
+
+This is the main file. The user have to run only this file to use the XMPP chat  
+
+"""
+
 import functions
 import sys
 import logging
@@ -5,6 +12,7 @@ import logging
 user_xmpp = None
 
 def print_menu():
+    #This is the menu that users logged can look to know and execute all the functions of the XMPP chat
     print("\n-_-_-_-_-_-_-_-_-_ MENU @alumchat.xyz _-_-_-_-_-_-_-_-_-")
     print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show details of a contact\n5: Join Chat room\n6: Send a File\n7: Define Presence Message\n8: Change Status\n9: Delete account  [ DANGER ] \n10: Sign out / Exit\n")
     menu_option = int(input("Select an option: "))
@@ -12,12 +20,13 @@ def print_menu():
 
 
 def first_menu():
+    #This is the welcomen menu to select sign up or sign in
     print("\n-_-_-_-_-_-_-_-_-_ WELCOME TO @alumchat.xyz _-_-_-_-_-_-_-_-_-")
     print("1: Sign up\n2: Sign In\n3: Exit\n")
     menu_option = int(input("Select an option: "))
     return menu_option
 
-#empieza el main 
+#Main start here
 
 
 print("************************* CHAT XMPP *************************")
@@ -48,7 +57,7 @@ if (initiation==1):
 elif (initiation==2):
     print("\n========= Sign In =========\n")
     user = input("Username: ") #gon18398@alumchat.xyz / paula@alumchat.xyz 
-    passw = input("Password: ") #123  /  123*
+    passw = input("Password: ") #123  /  123
     my_xmpp = functions.XMPP_CHAT(user, passw, 1)
     my_xmpp.connect()
     print("Welcome Back!")
@@ -63,7 +72,7 @@ else:
     print("Invalid option")
 
 
-
+#menu if the user is logged
 while(option >= 1):  
          
     if (option == 1):
