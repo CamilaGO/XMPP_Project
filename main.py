@@ -187,6 +187,7 @@ while(option >= 1):
 
     elif (option == 10):
         print("\n========= Sign Out =========\n")
+        my_xmpp.disconnect()
         functions.sign_out()
         break
 

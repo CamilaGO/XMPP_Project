@@ -57,6 +57,11 @@ class XMPP_CHAT(ClientXMPP):
 
             self.add_event_handler("session_start", self.msg_start)
             self.add_event_handler("message", self.message)
+            self.add_event_handler("chatstate_active", self.status_active)
+            self.add_event_handler("chatstate_inactive", self.status_inactive)
+            self.add_event_handler("chatstate_composing", self.status_composing)
+            self.add_event_handler("chatstate_paused", self.status_paused)
+            self.add_event_handler("chatstate_gone", self.status_gone)
             
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0199') # XMPP Ping
@@ -231,6 +236,35 @@ class XMPP_CHAT(ClientXMPP):
 
         msg['chat_state'] = status
         msg.send()
+
+    def status_active(self, chatstate):
+        # Recibir notificaciones
+        # logging.info(chatstate)
+        print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is active"))
+
+
+    def status_inactive(self, chatstate):
+        # Recibir notificaciones
+        logging.info(chatstate)
+        print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is inactive"))
+
+
+    def status_composing(self, chatstate):
+        # Recibir notificaciones
+        # logging.info(chatstate)
+        print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is typing..."))
+
+
+    def status_paused(self, chatstate):
+        # Recibir notificaciones
+        # logging.info(chatstate)
+        print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Stop typing"))
+
+
+    def status_gone(self, chatstate):
+        # Recibir notificaciones
+        # logging.info(chatstate)
+        print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is gone"))
 
 
 
