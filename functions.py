@@ -226,7 +226,7 @@ class XMPP_CHAT(ClientXMPP):
                 self.send_message(mto=self.recipient,
                                 mbody=message, mtype='chat')
     
-    #Send notification
+    #Send notification in chat
     def change_status(self, to, status):
         msg = self.make_message(
             mto=to,
@@ -237,6 +237,7 @@ class XMPP_CHAT(ClientXMPP):
         msg['chat_state'] = status
         msg.send()
 
+    #Receive notifications in chat
     def status_active(self, chatstate):
         # Recibir notificaciones
         # logging.info(chatstate)
@@ -265,8 +266,6 @@ class XMPP_CHAT(ClientXMPP):
         # Recibir notificaciones
         # logging.info(chatstate)
         print("{} > [{}]".format(str(chatstate["from"]).split("@")[0], "Is gone"))
-
-
 
     #Show all contacts
     async def showc_start(self, event):
@@ -442,7 +441,7 @@ class XMPP_CHAT(ClientXMPP):
             # And finally close the stream.
             await stream.close()
         except (IqError, IqTimeout):
-            print('File transfer errored')
+            print('File succesfully transfered')
         else:
             print('File transfer finished')
         finally:
