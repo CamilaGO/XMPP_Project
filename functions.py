@@ -222,7 +222,7 @@ class XMPP_CHAT(ClientXMPP):
                                 mbody=message, mtype='chat')
     
     #Send notification
-    def change_status(self, to , status):
+    def change_status(self, to, status):
         msg = self.make_message(
             mto=to,
             mfrom=self.boundjid.bare,

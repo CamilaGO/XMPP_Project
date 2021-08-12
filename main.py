@@ -6,7 +6,7 @@ user_xmpp = None
 
 def print_menu():
     print("\n-_-_-_-_-_-_-_-_-_ MENU @alumchat.xyz _-_-_-_-_-_-_-_-_-")
-    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show details of a contact\n5: Join Chat room\n6: Send Notification\n7: Send a File\n8: Define Presence Message\n9: Change Status\n10: Delete account  [ DANGER ] \n11: Sign out / Exit\n")
+    print("1: Send a DM\n2: Show all users info\n3: Add a user to roster\n4: Show details of a contact\n5: Join Chat room\n6: Send a File\n7: Define Presence Message\n8: Change Status\n9: Delete account  [ DANGER ] \n10: Sign out / Exit\n")
     menu_option = int(input("Select an option: "))
     return menu_option
 
@@ -109,12 +109,8 @@ while(option >= 1):
         my_xmpp.connect()
         my_xmpp.process(forever=False)
         option = print_menu()
-    
+       
     elif (option == 6):
-        print("\n========= Send Notification =========\n")
-        #7 FALTA
-    
-    elif (option == 7):
         print("\n========= Send a File =========\n")
         #No srive aun  ):
         recipient = input("Recipient username: ") 
@@ -124,7 +120,7 @@ while(option >= 1):
         my_xmpp.process(forever=False)
         option = print_menu()
 
-    elif (option == 8):
+    elif (option == 7):
         print("\n========= Presence Message =========\n")
         pmsg = input("Presence Message: ")
         my_xmpp = functions.XMPP_CHAT(user, passw, 9, pmsg, new_status)
@@ -133,7 +129,7 @@ while(option >= 1):
         my_xmpp.process(forever=False)
         option = print_menu()
     
-    elif (option == 9):
+    elif (option == 8):
         print("\n========= Define Status =========\n")
         new_status = input('New Status: ') 
         my_xmpp = functions.XMPP_CHAT(user, passw, 10, new_status)
@@ -143,7 +139,7 @@ while(option >= 1):
         option = print_menu()
     
         
-    elif (option == 10):
+    elif (option == 9):
         print("\n========= Delete User =========\n")
         my_xmpp = functions.XMPP_CHAT(user, passw, 11)
         print("Removing ...\n")
@@ -189,7 +185,7 @@ while(option >= 1):
         else:
             print("Invalid option")
 
-    elif (option == 11):
+    elif (option == 10):
         print("\n========= Sign Out =========\n")
         functions.sign_out()
         break
