@@ -5,7 +5,7 @@
 This project is a XMPP client with slixmpp implemented for *redes* course at UVG. 
 
 ## Demo
-[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/vt5fpE0bzSY)
+[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/6dQVL9QUJzg)
 
 
 ## Requirements
